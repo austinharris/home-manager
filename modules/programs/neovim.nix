@@ -79,6 +79,10 @@ let
         lib.concatMapStringsSep ";" luaPackages.getLuaPath
         resolvedExtraLuaPackages
       }"'';
+  extraMakeLibraryWrapperArgs = lib.optionalString (cfg.extraPackages != [ ]) ''
+     --suffix LD_LIBRARY_PATH : "${
+       lib.makeLibraryPath (cfg.extraPackages)
+     }"'';
 in {
   imports = [
     (mkRemovedOptionModule [ "programs" "neovim" "withPython" ]
@@ -402,7 +406,7 @@ in {
       wrapperArgs =
         (lib.escapeShellArgs (neovimConfig.wrapperArgs ++ cfg.extraWrapperArgs))
         + " " + extraMakeWrapperArgs + " " + extraMakeWrapperLuaCArgs + " "
-        + extraMakeWrapperLuaArgs;
+        + extraMakeWrapperLuaArgs + " " + extraMakeLibraryWrapperArgs;
       wrapRc = false;
     });
   in mkIf cfg.enable {
